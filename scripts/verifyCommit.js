@@ -1,8 +1,8 @@
 const chalk = require('chalk')
-// HUSKY_GIT_PARAMS 参数就是 commit message 文件路径
-// 在默认情况下可能获取不到
+// HUSKY_GIT_PARAMS 在默认情况下可能获取不到
 // 只需要在 commit-msg 这个 shell 脚本中加一句
 // export HUSKY_GIT_PARAMS="$*"
+// $* 参数就是 commit message 文件路径
 // 顺便说下 $0 还可以拿到当前的 hook 名
 const msgPath = process.env.HUSKY_GIT_PARAMS
 const msg = require('fs')
