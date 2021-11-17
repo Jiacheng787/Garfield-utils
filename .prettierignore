@@ -1,0 +1,6 @@
+**/dist/**
+**/node_modules/**
+**/test/**
+**/scripts/**
+.eslintrc.js
+.prettierrc.js
