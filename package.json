@@ -15,12 +15,6 @@
     "lint": "eslint",
     "prepare": "husky install"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "commit-msg": "node scripts/verifyCommit.js"
-    }
-  },
   "lint-staged": {
     "*.js": [
       "prettier --write"
