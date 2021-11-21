@@ -125,7 +125,8 @@ export default [
       entryFileNames: '[name].cjs.js',
     },
     plugins: [resolve(), commonjs(), typescript()],
-  }, {
+  },
+  {
     input: './src/index.ts',
     output: {
       dir: 'dist',
@@ -133,7 +134,7 @@ export default [
       entryFileNames: '[name].esm.js',
     },
     plugins: [resolve(), commonjs(), typescript()],
-  }
+  },
 ];
 ```
 
@@ -218,7 +219,7 @@ $ npx eslint --init
 "scripts": {
   "dev": "rollup -w -c",
   "build": "rollup -c",
-+  "lint": "eslint",
++  "lint": "eslint src/**",
 },
 ```
 
@@ -271,7 +272,9 @@ $ yarn add husky lint-staged -D
 
 > 需要注意，`husky` 和 `lint-staged` 是两个互不相干的包，只不过经常在一起用。`husky` 用来提供 Git hooks ，`lint-staged` 在安装后会有一个命令，通过这个命令可以根据 `package.json` 中配置的规则，对暂存区中的文件进行处理
 
-> 这边说一下，husky 在 v6.0.0 之后进行了破坏性更新，修改了原有配置方式，具体配置方式可以参考文档：https://typicode.github.io/husky
+> 有同学问为啥要用 `lint-staged` ，试想一下，如果每次都检查 `src` 下的所有文件，可能不是必要的，特别是对于有历史包袱的老项目而言，可能无法一次性修复不符合规则的写法。所以我们需要使用 `lint-staged` 工具只针对当前修改的部分进行检测
+
+> 这边说一下，husky 在 v6.0.0 之后进行了破坏性更新，修改了原有配置方式，原先是在 `package.json` 中配置，现在改用命令的方式添加 hook 。具体配置方式可以参考文档：https://typicode.github.io/husky
 
 在 `package.json` 中添加一个 npm script 如下：
 
@@ -279,7 +282,7 @@ $ yarn add husky lint-staged -D
 "scripts": {
   "dev": "rollup -w -c",
   "build": "rollup -c",
-  "lint": "eslint",
+  "lint": "eslint src/**",
 +  "prepare": "husky install"
 },
 ```
@@ -318,33 +321,30 @@ $ npx husky add .husky/commit-msg "node scripts/verifyCommit.js"
 },
 ```
 
+> 注意这里 `eslint` 和 `prettier` 只对暂存区中的文件进行处理，因此无需添加 `src/**`
+
 对于 commit message 校验，我们创建一个 `scripts/verifyCommit.js` 如下：
 
 ```js
-const chalk = require('chalk')
-const msgPath = process.env.HUSKY_GIT_PARAMS
-const msg = require('fs')
-  .readFileSync(msgPath, 'utf-8')
-  .trim()
+const chalk = require('chalk');
+const msgPath = process.env.HUSKY_GIT_PARAMS;
+const msg = require('fs').readFileSync(msgPath, 'utf-8').trim();
 
-const commitRE = /^(revert: )?(feat|fix|docs|dx|style|refactor|perf|test|workflow|build|ci|chore|types|wip|release)(\(.+\))?: .{1,50}/
+const commitRE =
+  /^(revert: )?(feat|fix|docs|dx|style|refactor|perf|test|workflow|build|ci|chore|types|wip|release)(\(.+\))?: .{1,50}/;
 
 if (!commitRE.test(msg)) {
-  console.log()
+  console.log();
   console.error(
-    `  ${chalk.bgRed.white(' ERROR ')} ${chalk.red(
-      `invalid commit message format.`
-    )}\n\n` +
-    chalk.red(
-      `  Proper commit message format is required for automated changelog generation. Examples:\n\n`
-    ) +
-    `    ${chalk.green(`feat(compiler): add 'comments' option`)}\n` +
-    `    ${chalk.green(
-      `fix(v-model): handle events on blur (close #28)`
-    )}\n\n` +
-    chalk.red(`  See .github/commit-convention.md for more details.\n`)
-  )
-  process.exit(1)
+    `  ${chalk.bgRed.white(' ERROR ')} ${chalk.red(`invalid commit message format.`)}\n\n` +
+      chalk.red(
+        `  Proper commit message format is required for automated changelog generation. Examples:\n\n`
+      ) +
+      `    ${chalk.green(`feat(compiler): add 'comments' option`)}\n` +
+      `    ${chalk.green(`fix(v-model): handle events on blur (close #28)`)}\n\n` +
+      chalk.red(`  See .github/commit-convention.md for more details.\n`)
+  );
+  process.exit(1);
 }
 ```
 
@@ -390,17 +390,17 @@ $ yarn add jest -D
 编写单元测试的目录通常命名为 `test` 或者 `__test__` ，对应的文件命名为 `xxx.test.js` 或者 `xxx.spec.js` 。这里创建 `test/index.test.js` 文件如下：
 
 ```js
-descript("Test suit I", () => {
-  it("test case 1", () => {
+descript('Test suit I', () => {
+  it('test case 1', () => {
     // 基本类型使用 .toBe 断言
     expect(1 + 1).toBe(2);
-  })
+  });
 
-  it("test case 2", () => {
+  it('test case 2', () => {
     // 对象、数组使用 .toEqual 断言
     expect([1, 2, 3, 4].map(n => n + 1)).toEqual([2, 3, 4, 5]);
-  })
-})
+  });
+});
 ```
 
 执行一下测试脚本：
@@ -418,4 +418,12 @@ TODO: Jest 支持 TypeScript
 - 使用构建发布脚本
 - 使用文档网站
 - 支持单仓多包 monorepo 项目
+- 使用 yeoman 脚手架初始化一份项目模板
 
+## 参考
+
+[手摸手学会搭建一个 TS+Rollup 的初始开发环境](https://juejin.cn/post/7029525775321661470)
+
+[基于 Lerna 实现 Monorepo 项目管理](https://juejin.cn/post/7030207667457130527)
+
+[从 ESLint 开启项目格式化](https://juejin.cn/post/7031506030068662285)

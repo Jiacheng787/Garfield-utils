@@ -12,7 +12,7 @@
     "dev": "rollup -w -c",
     "build": "rollup -c",
     "test": "jest",
-    "lint": "eslint",
+    "lint": "eslint src/**",
     "prepare": "husky install"
   },
   "husky": {
