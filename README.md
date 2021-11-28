@@ -413,6 +413,53 @@ $ yarn test
 
 TODO: Jest 支持 TypeScript
 
+## 9. 发包流程
+
+在本地执行以下命令进行登录：
+
+```bash
+$ npm login
+```
+
+发布一个 npm 包之前，填写 `package.json` 中三个最重要的字段：
+
+```js
+{
+  "name": "@garfield/promisify",
+  "version": "1.0.0",
+  "main": "index.js"
+}
+```
+
+之后执行发包命令即可：
+
+```bash
+$ npm publish
+```
+
+一旦发布完成，在任意地方通过 `npm i` 均可依赖该包。
+
+该包进行更新后，可通过修改 `package.json` 中的版本号，再次发包进行升级。注意需要遵守 `semver` 规范，npm 的版本号为 `semver` 规范，由 `[major, minor, patch]` 三部分组成，其中：
+
+- major: 当你发了一个含有 Breaking Change 的 API
+- minor: 当你新增了一个向后兼容的功能时
+- patch: 当你修复了一个向后兼容的 Bug 时
+
+在 npm 发包时，实际发包内容为 `package.json` 中 `files` 字段，一般只需将构建后资源(如果需要构建)进行发包，源文件可发可不发。
+
+`npm publish` 将自动走过以下生命周期：
+
+- prepublishOnly: 如果发包之前需要构建，可以放在这里执行
+- prepack
+- prepare: 如果发包之前需要构建，可以放在这里执行 (该周期也会在 npm i 后自动执行)
+- postpack
+- publish
+- postpublish
+
+发包实际上是将本地 package 中的所有资源进行打包，并上传到 npm 的一个过程。
+
+也可以通过一个 **构建发布脚本** 来实现以上流程。先跑一遍单元测试，然后执行构建命令，修改 `package.json` 版本号，将 `package.json`、`README.md`、`LICENSE` 等文件复制到输出目录，生成 CHANGELOG，执行 git 提交操作（提交前会对源码进行 lint），生成 git tag，最后 `npm publish` 完成发包。
+
 ## 后续任务
 
 - 使用构建发布脚本
