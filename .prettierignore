@@ -4,3 +4,4 @@
 **/scripts/**
 .eslintrc.js
 .prettierrc.js
+*.config.js

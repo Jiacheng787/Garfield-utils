@@ -142,6 +142,8 @@ export default [
 
 > `format` 也可以使用 `umd` ，umd 是兼容 amd/cjs/iife 的通用打包格式，适合浏览器
 
+> Rollup 默认情况下不会将第三方库打包进我们的代码中，适用于在 Node.js 环境下运行，如果需要将我们编写的源码与第三方库合并输出，可以使用 `@rollup/plugin-node-resolve`
+
 最后在 `package.json` 中添加两个 npm script 如下：
 
 ```js
@@ -153,9 +155,19 @@ export default [
 
 > 在开发时通过 `yarn dev` 可以实时编译打包，在打包时通过 `yarn build` 即可完成打包
 
-## 5. ESLint 配置
+## 5. Babel 配置
+
+Babel 的作用是根据配置的 `browserslist` ，根据目标浏览器的兼容性，对代码中用到的 ES2015+ 语法进行转换，以及 API 的 polyfill。
+
+无论第三方库还是 npm 包，语法转换基本都需要，区别主要在 polyfill 上。引入 polyfill 主要有两种方式，一是通过 `@babel/preset-env` 引入，根据 `browserslist` 配置决定需要引入哪些 polyfill，根据 `useBuiltIns` 配置决定全量引入还是按需引入，这种引入方式是全局污染的，不适合第三方库；二是通过 `@babel/plugin-transform-runtime` 引入，配置 `corejs: 3` 选项，从 `@babel/runtime-corejs3` 引入 polyfill，这种方式不适合前端项目，因为无法根据 `browserslist` 配置动态调整 polyfill 内容，但适合第三方库，因为提供了沙箱机制，polyfill 不会全局污染。
+
+实际上，第三方库也可以只做语法转换，不进行 polyfill，由前端项目决定需要兼容的目标浏览器的版本。这种情况下，需要前端项目的 `babel-loader` 处理 `node_modules` 中的文件，但一般来说我们需要最小化 loader 作用范围，确保编译速度，我们可以配置 `useBuiltIns: entry` 在入口文件全量引入 polyfill，确保可以命中第三方库需要兼容的 API。
+
+## 6. ESLint 配置
 
 如果是开源的项目，有人提 PR 的时候，我们会希望他的代码风格是比较符合我们一些预期的，因此在项目中引入 ESLint 。
+
+> 注意 ESLint 只能进行语法检查，将问题打印到控制台，但不能自动格式化，需要手动一条一条去改，很不方便。下面我们会引入 Prettier 实现代码格式化
 
 先安装 eslint 开发环境依赖：
 
@@ -225,9 +237,9 @@ $ npx eslint --init
 
 > 这样通过 `yarn lint` 就可以对代码进行检查
 
-## 6. Prettier 配置
+## 7. Prettier 配置
 
-上面我们配置 ESLint 进行代码规范检查，这边配置 Prettier 进行代码风格校验。前端开发项目中会涉及到一些代码格式问题，比如代码缩进空格、字符串是单引号还是双引号、是否使用尾分号、单行长度等等，可以使用 Prettier 实现团队代码风格统一。
+上面我们配置 ESLint 进行代码规范检查，而 ESLint 不具备代码格式化的功能，这边配置 Prettier 进行代码风格校验以及代码格式化。前端开发项目中会涉及到一些代码格式问题，比如代码缩进空格、字符串是单引号还是双引号、是否使用尾分号、单行长度等等，可以使用 Prettier 实现团队代码风格统一。
 
 首先安装 Prettier ：
 
@@ -258,7 +270,7 @@ $ yarn add prettier -D
 }
 ```
 
-## 7. Husky 配置
+## 8. Husky 配置
 
 如果开发者在没有格式化的情况下提交代码怎么办，为此，引入 Husky 在 Git commit 提交前自动格式化暂存区中的文件，以及校验是否符号 ESLint 规则。
 
@@ -367,7 +379,7 @@ node scripts/verifyCommit.js
 
 > `$*` 参数就是 commit message 文件路径，顺便说下 `$0` 还可以拿到当前的 hook 名
 
-## 8. 添加单元测试
+## 9. 添加单元测试
 
 首先安装 Jest ：
 
@@ -413,7 +425,7 @@ $ yarn test
 
 TODO: Jest 支持 TypeScript
 
-## 9. 发包流程
+## 10. 发包流程
 
 在本地执行以下命令进行登录：
 
@@ -474,3 +486,5 @@ $ npm publish
 [基于 Lerna 实现 Monorepo 项目管理](https://juejin.cn/post/7030207667457130527)
 
 [从 ESLint 开启项目格式化](https://juejin.cn/post/7031506030068662285)
+
+[「前端基建」探索不同项目场景下Babel最佳实践方案](https://juejin.cn/post/7051355444341637128#heading-16)
