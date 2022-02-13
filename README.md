@@ -488,3 +488,5 @@ $ npm publish
 [从 ESLint 开启项目格式化](https://juejin.cn/post/7031506030068662285)
 
 [「前端基建」探索不同项目场景下Babel最佳实践方案](https://juejin.cn/post/7051355444341637128#heading-16)
+
+[前端工程化（7）：你所需要知道的最新的babel兼容性实现方案](https://juejin.cn/post/6976501655302832159)
