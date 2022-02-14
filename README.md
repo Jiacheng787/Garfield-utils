@@ -159,7 +159,63 @@ export default [
 
 Babel 的作用是根据配置的 `browserslist` ，根据目标浏览器的兼容性，对代码中用到的 ES2015+ 语法进行转换，以及 API 的 polyfill。
 
-无论第三方库还是 npm 包，语法转换基本都需要，区别主要在 polyfill 上。引入 polyfill 主要有两种方式，一是通过 `@babel/preset-env` 引入，根据 `browserslist` 配置决定需要引入哪些 polyfill，根据 `useBuiltIns` 配置决定全量引入还是按需引入，这种引入方式是全局污染的，不适合第三方库；二是通过 `@babel/plugin-transform-runtime` 引入，配置 `corejs: 3` 选项，从 `@babel/runtime-corejs3` 引入 polyfill，这种方式不适合前端项目，因为无法根据 `browserslist` 配置动态调整 polyfill 内容，但适合第三方库，因为提供了沙箱机制，polyfill 不会全局污染。
+无论第三方库还是 npm 包，语法转换基本都需要，区别主要在 polyfill 上。引入 polyfill 主要有两种方式：
+
+- 一是通过 `@babel/preset-env` 引入，根据 `browserslist` 配置决定需要引入哪些 polyfill，根据 `useBuiltIns` 配置决定全量引入还是按需引入，这种引入方式是全局污染的（污染原型链，会跟其他第三方 polyfill 冲突），不适合第三方库，但是可以用于前端项目。
+
+  ```js
+  module.exports = {
+    presets: [
+      [
+        "@babel/preset-env", // 负责语法转换，同时引入 polyfill
+        {
+          useBuiltIns: "usage", // 默认为 false，entry 全量引入，usage 按需引入
+          corejs: 3
+        }
+      ]
+    ],
+    plugins: [
+      [
+        '@babel/plugin-transform-runtime',
+        {
+          // corejs: 3,
+          helpers: true, // 提取 babel 中的 helper 函数减小打包体积
+          regenerator: true,
+          useESModules: true,
+        },
+      ],
+    ]
+  }
+  ```
+
+- 二是通过 `@babel/plugin-transform-runtime` 引入，配置 `corejs: 3` 选项，从 `@babel/runtime-corejs3` 引入 polyfill，这种方式不适合前端项目，因为无法根据 `browserslist` 配置动态调整 polyfill 内容，但适合第三方库，因为提供了沙箱机制，polyfill 不会全局污染。
+
+  ```js
+  module.exports = {
+    presets: [
+      [
+        "@babel/preset-env", // 只负责语法转换，不引入 polyfill
+        // {
+        //   useBuiltIns: "usage",
+        //   corejs: 3
+        // }
+      ]
+    ],
+    plugins: [
+      [
+        '@babel/plugin-transform-runtime',
+        {
+          corejs: 3, // 从 @babel/runtime-corejs3 中引入 polyfill
+          helpers: true, // 提取 babel 中的 helper 函数减小打包体积
+          regenerator: true,
+          useESModules: true,
+        },
+      ],
+    ]
+  }
+  ```
+
+  > 这边注意：配置 `corejs: 2` 只会对静态方法，例如 `Array.isArray` 进行 polyfill，但不会对实例方法，例如数组的 `includes` 和 `filter` 进行 polyfill，但是配置 `corejs: 3` 之后，实例方法就会被 polyfill
 
 实际上，第三方库也可以只做语法转换，不进行 polyfill，由前端项目决定需要兼容的目标浏览器的版本。这种情况下，需要前端项目的 `babel-loader` 处理 `node_modules` 中的文件，但一般来说我们需要最小化 loader 作用范围，确保编译速度，我们可以配置 `useBuiltIns: entry` 在入口文件全量引入 polyfill，确保可以命中第三方库需要兼容的 API。
 
