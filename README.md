@@ -10,6 +10,134 @@
 $ npm init -y
 ```
 
+同时将 `package.json` 文件修改如下：
+
+```js
+{
+  // 应用主入口文件；CommonJS 入口文件
+  "main": "./dist/index.cjs.js",
+  // ES Module 入口文件
+  "module": "./dist/index.esm.js",
+  // TS 声明文件
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+}
+```
+
+> `files` 字段是用于约定在发包的时候 NPM 会发布包含的文件和文件夹
+
+> 注意现在输出的内容都是平级的，即平铺在 `./dist` 目录下
+
+### 1) 入口文件
+
+`main` 指 npm package 的入口文件，当我们对某个 package 进行导入时，实际上导入的是 main 字段所指向的文件。
+
+最初 `main` 字段实际上提供给 CommonJS 使用，随着 ESM 发展，许多 package 会打包 N 份模块化格式进行分发，如 antd 既支持 ES，也支持 umd，将会打包两份。如果使用 `import` 对该库进行导入，则首次寻找 `module` 字段引入，否则引入 `main` 字段。基于此，许多前端友好的库，都进行了以下分发操作:
+
+1. 对代码进行两份格式打包: `commonjs` 与 `es module`
+2. `module` 字段作为 `es module` 入口
+3. `main` 字段作为 `commonjs` 入口
+
+使用 Webpack 打包 `node_modules` 中的依赖时，Webpack 会根据 `resolve.mainFields` 配置解析 `package.json` 中配置的入口文件路径，默认配置如下：
+
+```js
+module.exports = {
+  //...
+  resolve: {
+    mainFields: ['browser', 'module', 'main'],
+  },
+};
+```
+
+> 假如提供了 `module` 字段，Webpack 优先使用 `module` 字段对应的入口文件路径
+
+### 2) 注册命令
+
+很多 npm 包安装的时候，会注册命令便于使用，例如 Vue-cli、Webpack、ESLint 等等。我们只需要在 `package.json` 中添加一个 `bin` 字段，指定执行命令的脚本文件路径即可：
+
+```js
+{
+  "bin": {
+    "garfield-service": "./bin/garfield-service.js",
+  }
+}
+```
+
+使用 `npm i` 安装该包，会自动在 `node_modules/.bin` 路径下创建一个软链接，指向脚本文件。运行这个命令即可执行脚本。需要注意，该脚本文件必须是可执行文件，即文件头部需要声明脚本解释程序：
+
+```js
+#!/usr/bin/env node
+```
+
+如果脚本比较复杂，想调试一下脚本，那么每次都要先发布 npm 包，然后 `npm i` 安装之后才能调试，这样比较麻烦，有没有方法可以直接运行脚本呢？这里就要用到 `npm link` 命令，作用是将调试的npm模块链接到对应的运行项目中去，我们也可以通过这个命令把模块链接到全局。
+
+> 参考：
+>
+> https://docs.npmjs.com/cli/v8/commands/npm-link
+
+### 3) 发布哪些文件
+
+在 npm 包中，我们可以选择哪些文件发布到服务器中，比如只发布压缩后的代码，而过滤源代码；我们可以通过配置文件来进行指定，可以分为以下几种情况：
+
+- 存在 `.npmignore` 文件，以 `.npmignore` 文件为准，在文件中的内容都会被忽略，不会上传；
+- 不存在 `.npmignore` 文件，以 `.gitignore` 文件为准；
+- `package.json` 中存在 `files` 字段，可以理解为白名单；
+
+> ignore 相当于黑名单，files 字段就是白名单，当两者内容冲突时，以 files 为准，它的优先级最高
+
+> 可以通过 `npm pack` 命令进行本地模拟打包测试，在项目根目录下就会生成一个 tgz 的压缩包，这就是将要上传的文件内容
+
+### 4) 项目依赖
+
+在前端项目或者 npm 包中，所有的依赖库都会通过 `dependencies` 和 `devDependencies` 字段进行配置管理。
+
+- `dependencies`：表示生产环境下的依赖管理，例如 vue、react、axios 等生产环境运行所依赖的模块，默认不带参数，或者 `--save` 简写 `-S`；
+- `devDependencies`：表示开发环境下的依赖管理，例如 Webpack、ESLint 等项目构建所需的依赖，`--save-dev` 简写 `-D`；
+
+> 实际上这两个字段对于前端项目来说并没有太大区别，但是在以下场景中会有区别：
+> 
+> - 前端项目安装一个第三方库，默认只安装该库 `dependencies` 节点下的依赖
+> - 在 CI 环境中，运行 `npm install --production` 只安装 `dependencies` 节点下的依赖
+
+除了以上两个字段，在 npm 包中还会用到 `peerDependencies` 这个字段，用于指定项目运行宿主环境要求。例如 Element-Plus 组件库本身无法单独运行，必须依赖 Vue3 环境才能运行，因此通过 `peerDependencies` 指定宿主环境依赖：
+
+```js
+"peerDependencies": {
+  "vue": "^3.2.0"
+},
+```
+
+### 5) 版本号
+
+每次发包的时候，都需要更新版本号。npm包的版本号也是有规范要求的，通用的就是遵循semver语义化版本规范。
+
+`semver`，`Semantic Versioning` 语义化版本的缩写，文档可见 semver.org/，它由 `[major, minor, patch]` 三部分组成，其中
+
+- `major`: 当你发了一个含有 Breaking Change 的 API
+- `minor`:  当你新增了一个向后兼容的功能时
+- `patch`: 当你修复了一个向后兼容的 Bug 时
+
+此外修订号后面还可以加先行版本号，作为版本号的延伸；当要发行大版本或核心功能时，但不能保证这个版本完全正常，就要先发一个先行版本。
+
+先行版本号的格式是在修订版本号后面加上一个连接号（-），再加上一连串以点（.）分割的标识符，标识符可以由英文、数字和连接号（[0-9A-Za-z-]）组成。常见的先行版本号有：
+
+- `1.0.0-alpha`：不稳定版本，一般而言，该版本的Bug较多，需要继续修改，是测试版本
+- `1.0.0-beta`：基本稳定，相对于Alpha版已经有了很大的进步，消除了严重错误
+- `1.0.0-rc`：和正式版基本相同，基本上不存在导致错误的Bug
+- `1.0.0-release`：最终版本
+
+在 `package.json` 的一些依赖的版本号中，我们还会看到 `^`、`~` 这样的标识符，或者不带标识符：
+
+- 不带标识符：完全百分百匹配，必须使用当前版本号
+- 波浪符号 `~`：固定主版本号和次版本号，修订号可以随意更改。对于 `~1.2.3` 而言，它的版本号范围是 `>=1.2.3  <1.3.0`
+- 插入符号 `^`：固定主版本号，次版本号和修订号可以随意更改。对于 `^1.2.3` 而言，它的版本号范围是 `>=1.2.3  <2.0.0`
+- 任意版本 `*`：对版本没有限制，一般不用
+- 或符号 `||`：可以用来设置多个版本号限制规则，例如 `>=3.0.0 || <=1.0.0`
+
+当我们 `npm i` 时，**默认的版本号是 `^`，可最大限度地在向后兼容与新特性之间做取舍**，但是有些库有可能不遵循该规则，我们在项目时应当使用 `yarn.lock/package-lock.json` 锁定版本号。
+
 ## 2. 初始化 TypeScript
 
 安装 `typescript` 编译器：
@@ -58,26 +186,6 @@ $ tsc --init
 ```
 
 > 这边重点就是注释的两个配置，Typescript 在编译过程中会向 `./dist` 目录输出 `index.d.ts` 的类型声明文件
-
-同时将 `package.json` 文件修改如下：
-
-```js
-{
-  // 应用主入口文件；CommonJS 入口文件
-  "main": "./dist/index.cjs.js",
-  // ES Module 入口文件
-  "module": "./dist/index.esm.js",
-  // TS 声明文件
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
-}
-```
-
-> `files` 字段是用于约定在发包的时候 NPM 会发布包含的文件和文件夹
-
-> 注意现在输出的内容都是平级的，即平铺在 `./dist` 目录下
 
 ## 3. Git 初始化
 
@@ -154,6 +262,24 @@ export default [
 ```
 
 > 在开发时通过 `yarn dev` 可以实时编译打包，在打包时通过 `yarn build` 即可完成打包
+
+开发常用的 rollup 插件：
+
+- `@rollup/plugin-node-resolve`：Rollup 默认不会打包第三方库，适合在 Node.js 环境下运行，使用这个插件可以将编写的源码和第三方库合并输出
+- `@rollup/plugin-commonjs`：Rollup 只能处理 ES Module 规范的第三方库，对于使用 CommonJS 的第三方库，需要使用这个插件将 CommonJS 转为 ES Module
+- `@rollup/plugin-babel`：支持 Babel 的插件
+- `@rollup/plugin-typescript`：支持 TypeScript 的插件
+- `@rollup/plugin-eslint`：支持 ESLint 的插件
+
+> 官方插件：
+>
+> https://github.com/rollup/plugins
+
+另外还有一些非官方插件：
+
+- `rollup-plugin-terser`：支持 Terser 代码压缩的插件
+- `rollup-plugin-serve`：起一个本地服务
+- `rollup-plugin-vue`：打包 Vue 组件的时候，提前编译 Vue SFC
 
 ## 5. Babel 配置
 
@@ -536,6 +662,12 @@ $ npm publish
 - 使用 yeoman 脚手架初始化一份项目模板
 
 ## 参考
+
+https://rollupjs.org/guide/en/
+
+[从零开始发布自己的NPM包](https://juejin.cn/post/7052307032971411463)
+
+[前端组件/库打包利器rollup使用与配置实战](https://juejin.cn/post/6844903970469576718)
 
 [手摸手学会搭建一个 TS+Rollup 的初始开发环境](https://juejin.cn/post/7029525775321661470)
 
