@@ -654,6 +654,55 @@ $ npm publish
 
 也可以通过一个 **构建发布脚本** 来实现以上流程。先跑一遍单元测试，然后执行构建命令，修改 `package.json` 版本号，将 `package.json`、`README.md`、`LICENSE` 等文件复制到输出目录，生成 CHANGELOG，执行 git 提交操作（提交前会对源码进行 lint），生成 git tag，最后 `npm publish` 完成发包。
 
+可以使用一些 CLI 工具库配合 GitHub Actions 实现自动发包：
+
+- https://github.com/release-it/release-it
+- https://github.com/JS-DevTools/version-bump-prompt
+
+```yaml
+name: Release
+
+# 打 tag 之后执行发包流程
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2.2.1
+
+      - name: Use Node.js v16
+        uses: actions/setup-node@v2
+        with:
+          node-version: v16
+          registry-url: https://registry.npmjs.org/
+          cache: pnpm
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: PNPM build
+        run: pnpm run build
+
+      # 执行发包操作
+      - name: Publish to NPM
+        run: pnpm -r publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+```
+
+参考：
+
+> https://github.com/unocss/unocss/blob/main/.github/workflows/release.yml
+
 ## 后续任务
 
 - 使用构建发布脚本
