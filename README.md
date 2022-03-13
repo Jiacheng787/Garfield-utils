@@ -23,6 +23,13 @@ $ npm init -y
   "files": [
     "dist"
   ],
+  /****** 可选字段 ******/
+  // 使用 exports 字段指定入口文件
+  "exports": "",
+  // 指定模块规范
+  "type": "commonjs" | "moudle",
+  // 使用 bin 字段注册命令
+  "bin": "",
 }
 ```
 
@@ -137,6 +144,27 @@ module.exports = {
 - 或符号 `||`：可以用来设置多个版本号限制规则，例如 `>=3.0.0 || <=1.0.0`
 
 当我们 `npm i` 时，**默认的版本号是 `^`，可最大限度地在向后兼容与新特性之间做取舍**，但是有些库有可能不遵循该规则，我们在项目时应当使用 `yarn.lock/package-lock.json` 锁定版本号。
+
+### 6) 包管理工具
+
+使用 pnpm 作为包管理工具。
+
+基本用法：
+
+- `pnpm add <pkg>`：安装依赖
+- `pnpm add -D <pkg>`：安装依赖到 devDependencies
+- `pnpm install`：安装所有依赖
+- `pnpm -r update`：递归更新每个包的依赖
+- `pnpm -r update typescript@latest`：将每个包的 typescript 更新为最新版本
+- `pnpm remove`：移除依赖
+
+如何支持 monorepo 项目：https://pnpm.io/zh/workspaces
+
+`pnpm -r` 带一个参数 `-r` 表示进行递归操作。
+
+[pnpm 官方文档](https://pnpm.io/zh/)
+
+[为什么 vue 源码以及生态仓库要迁移 pnpm?](https://juejin.cn/post/7038192011882528776)
 
 ## 2. 初始化 TypeScript
 
@@ -609,6 +637,8 @@ TODO: Jest 支持 TypeScript
 
 ## 10. 发包流程
 
+### 1) 手动发包
+
 在本地执行以下命令进行登录：
 
 ```bash
@@ -652,7 +682,11 @@ $ npm publish
 
 发包实际上是将本地 package 中的所有资源进行打包，并上传到 npm 的一个过程。
 
+### 2) 使用构建发布脚本
+
 也可以通过一个 **构建发布脚本** 来实现以上流程。先跑一遍单元测试，然后执行构建命令，修改 `package.json` 版本号，将 `package.json`、`README.md`、`LICENSE` 等文件复制到输出目录，生成 CHANGELOG，执行 git 提交操作（提交前会对源码进行 lint），生成 git tag，最后 `npm publish` 完成发包。
+
+### 3) 使用 CLI 工具库配合 GitHub Action 实现发包
 
 可以使用一些 CLI 工具库配合 GitHub Actions 实现自动发包：
 
