@@ -309,6 +309,15 @@ export default [
 - `rollup-plugin-serve`：起一个本地服务
 - `rollup-plugin-vue`：打包 Vue 组件的时候，提前编译 Vue SFC
 
+:::tip
+
+推荐两个基于 rollup 的打包工具：
+
+- [tsup](https://github.com/egoist/tsup)
+- [unbuild](https://github.com/unjs/unbuild)
+
+:::
+
 ## 5. Babel 配置
 
 Babel 的作用是根据配置的 `browserslist` ，根据目标浏览器的兼容性，对代码中用到的 ES2015+ 语法进行转换，以及 API 的 polyfill。
@@ -446,6 +455,15 @@ $ npx eslint --init
 ```
 
 > 这样通过 `yarn lint` 就可以对代码进行检查
+
+:::tip
+
+这里推荐两个 ESLint 配置：
+
+- [腾讯 alloyteam ESLint 配置](https://github.com/AlloyTeam/eslint-config-alloy)
+- [antfu 大佬的 ESLint 配置](https://github.com/antfu/eslint-config)
+
+:::
 
 ## 7. Prettier 配置
 
