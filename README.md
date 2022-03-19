@@ -1,6 +1,6 @@
-# My-Promisify
+# Garfield-utils
 
-本项目旨在通过编写一个 `promisify` 工具函数，实践 npm 包相关工程化规范。
+本项目旨在通过编写一个工具函数库，实践 npm 包相关工程化规范。
 
 ## 1. 初始化项目结构
 
