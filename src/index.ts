@@ -1,19 +1,5 @@
-type Args = unknown[];
-type Func = (...args: Args) => unknown;
-type Err = unknown;
-type Data = unknown;
-type Promisify = (func: Func) => (...args: Args) => Promise<unknown>;
+import { LinkedList } from './lib/LinkedList/LinkedList';
+import { Queue } from './lib/LinkedList/Queue';
+import { promisify } from './lib/Promisify/index';
 
-const promisify: Promisify =
-  func =>
-  (...args) =>
-    new Promise((resolve, reject) => {
-      func(...args, (err: Err, data: Data) => {
-        if (err) {
-          reject(err);
-        }
-        resolve(data);
-      });
-    });
-
-export default promisify;
+export { promisify, LinkedList, Queue };

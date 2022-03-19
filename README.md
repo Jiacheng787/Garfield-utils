@@ -651,7 +651,46 @@ $ yarn test
 
 > Jest 会自动去项目目录下查找 `xxx.test.js` 或者 `xxx.spec.js` 文件
 
-TODO: Jest 支持 TypeScript
+一般源码都会使用 ES2015+ 语法和 TypeScript 编写，这就需要 Jest 进行语法转换及编译 TypeScript。
+
+对于语法转换，Jest 会读取项目根目录的 `babel.config.js` 调用 babel 进行编译，所以只要 babel 相关依赖都正常安装就没问题。
+
+对于 TypeScript 需要安装额外的依赖：
+
+```bash
+$ yarn add typescript jest ts-jest @types/jest -D
+```
+
+然后在根目录创建 `jest.config.js` 内容如下：
+
+```js
+module.exports = {
+  transform: {
+    '^.+\\.tsx?$': 'ts-jest',
+  },
+  testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$',
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+}
+```
+
+编写 `index.test.ts` 文件如下：
+
+```ts
+import { LinkedList } from "../src/index";
+
+describe('LinkedList', () => {
+  it('add', () => {
+    const list = new LinkedList<number>();
+    list.add(1);
+    list.add(2);
+    list.add(3);
+    list.add(4);
+    expect(list.toString()).toBe("[ 1 2 3 4 ]");
+  })
+}
+```
+
+运行 `jest` 命令即可正常运行测试用例。
 
 ## 10. 发包流程
 
