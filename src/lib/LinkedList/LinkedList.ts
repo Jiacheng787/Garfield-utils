@@ -125,6 +125,6 @@ export class LinkedList<T> {
       res.push(list.val);
       list = list.next;
     }
-    return `[ ${res.join(' ')} ]`;
+    return `[${res.join(', ')}]`;
   }
 }
