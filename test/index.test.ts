@@ -29,6 +29,7 @@ class Polling {
 
   async onData(callback: (...args: unknown[]) => boolean) {
     // 这里使用一个死循环，而不是 setInterval 或者 setTimeout
+    // 注意 async 函数中的死循环并不会阻塞线程，而是由事件循环进行调度
     for (;;) {
       // timeout 确定最小轮询间隔
       // 若接口响应较快，下次轮询也需要等待 timeout 时间
