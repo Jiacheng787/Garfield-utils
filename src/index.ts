@@ -4,5 +4,6 @@ import { LinkedList } from './lib/LinkedList/LinkedList';
 import { Queue } from './lib/LinkedList/Queue';
 import { Polling } from './lib/Polling/index';
 import { promisify } from './lib/Promisify/index';
+import { sort } from './lib/Quick/index';
 
-export { promisify, LinkedList, Queue, compose, to, Polling };
+export { promisify, LinkedList, Queue, compose, to, Polling, sort };
