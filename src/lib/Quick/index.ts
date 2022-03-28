@@ -8,6 +8,7 @@ const partition = (nums: number[], lo: number, hi: number) => {
   const pivot = nums[lo];
   let i = lo + 1,
     j = hi;
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     while (i < hi && nums[i] <= pivot) {
       i++;
@@ -31,6 +32,6 @@ const _sort = (nums: number[], lo: number, hi: number) => {
   _sort(nums, p + 1, hi);
 };
 
-const sort = (nums: number[]) => {
+export const sort = (nums: number[]) => {
   _sort(nums, 0, nums.length - 1);
 };
