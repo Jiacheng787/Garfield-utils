@@ -94,6 +94,26 @@ module.exports = {
 
 > ignore 相当于黑名单，files 字段就是白名单，当两者内容冲突时，以 files 为准，它的优先级最高
 
+例如 `package.json` 配置如下：
+
+```json
+{
+  "files": [
+    "dist/*.js",
+    "types/*.d.ts"
+  ]
+}
+```
+
+这样发包内容会包括 `files` 定义的文件和 `package.json`、`README.md` 这些文档类文件。
+
+为什么有额外这些文档类呢，原因在于这些信息传递的文件，npm 是规定不允许忽略的，只要存在就会上传：
+
+- package.json
+- README (and its variants)
+- CHANGELOG (and its variants)
+- LICENSE / LICENCE
+
 > 可以通过 `npm pack` 命令进行本地模拟打包测试，在项目根目录下就会生成一个 tgz 的压缩包，这就是将要上传的文件内容
 
 ### 4) 项目依赖
