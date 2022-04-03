@@ -8,5 +8,5 @@ new Polling(() => request("相应内容"), {
 })
   .onData((res, err) => {
     console.log("===接口响应", res);
-    return ++count < 10;
+    return ++count >= 10;
   })
