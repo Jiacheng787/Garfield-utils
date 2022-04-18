@@ -169,37 +169,15 @@ module.exports = {
 
 npm 安装依赖默认添加 `^` 前缀，即 **默认锁定主版本号**，当再次执行 npm install 命令时，会自动安装这个包在此大版本下的最新版本。
 
+#### lock file 解决了什么问题
+
 在没有 lock file 的情况下，如果有些依赖未遵守 semver 规范，在小版本中引入 Breaking Change，则会在生产环境中引入 bug。
 
 而当有了 lock file 时，每个依赖的版本都被锁定（包括依赖的依赖），每次依赖安装的版本号都从 lock file 中进行获取，确保生成稳定的依赖树，避免了不可测的依赖风险。
 
-对于前端项目来说，既然可以锁定依赖版本，为什么还需要 lcok-file 呢，锁定依赖只能锁定当前项目中的依赖版本，但是还存在间接依赖，即依赖还有依赖，直接锁定依赖版本无法解决间接依赖的问题，间接依赖版本还是不受控制，需要借助 lock-file 锁定间接依赖的版本。
+#### 如何锁死依赖版本
 
-实际上 lock file 只能锁定前端项目的依赖，但无法锁定第三方库的间接依赖。为什么这么说呢，例如你安装 `@vue/cli-shared-utils`，而 `@vue/cli-shared-utils` 依赖了 `node-ipc`，`@vue/cli-shared-utils` 的 package.json 内容如下：
-
-```json
-{
-    "dependencies": {
-        // ...
-        "node-ipc": "^9.1.1",
-    },
-}
-```
-
-这种情况下，即使 `@vue/cli-shared-utils` 自己的 lock file 锁定的版本是 `9.1.1`，但是你首次 `npm i` 安装该包的时候，并不会按照 `@vue/cli-shared-utils` 的 lock file 锁定的版本安装，而是根据 package.json 中指定的 `^9.1.1` 规则进行安装。如果此时 `node-ipc` 发布了 `9.2.1` 版本，则会安装 `9.2.1` 版本，同时在你的前端项目的 lock file 中会记录该版本号，下次运行 `npm i` 安装依赖的时候，都会安装该版本的依赖。
-
-这样显然会导致间接依赖不受控的问题，实际上，`node-ipc` 的作者在 `9.2.2` 版本中植入了恶意代码，恰好 `@vue/cli-shared-utils` 中 package.json 的依赖锁定规则是 `^9.1.1`，因此导致很多安装了 `vue-cli` 的用户中招。因此 Vue 官方紧急发布了更新，将 `node-ipc` 版本锁死为 `9.2.1`：
-
-```json
-{
-    "dependencies": {
-        // ...
-        "node-ipc": "9.2.1",
-    },
-}
-```
-
-如果想要修改这个功能，可以执行以下命令：
+npm 安装依赖默认添加 `^` 前缀，如果想要修改这个功能，可以执行以下命令：
 
 ```bash
 $ npm config set save-prefix='~'
@@ -223,7 +201,41 @@ $ npm config set save-exact true
 
 > 这样每次 `npm install xxx --save` 时就会锁定依赖的版本号，相当于加了 `--save-exact` 参数。建议线上的应用都采用这种锁定版本号的方式
 
-### 6) 包管理工具
+#### 第三方库应该锁死 dependencies
+
+对于前端项目来说，既然可以在 package.json 中锁定依赖版本，为什么还需要 lock file 呢？在 package.json 中锁定依赖只能锁定当前项目中的依赖版本，但是还存在间接依赖，即依赖还有依赖，直接锁定依赖版本无法解决间接依赖的问题，间接依赖版本还是不受控制，需要借助 lock-file 锁定间接依赖的版本。
+
+实际上，lock file 只在前端项目发挥作用，第三方库的 lock file 无法锁定该库的间接依赖，即 dependencies。为什么这么说呢，例如你安装 `@vue/cli-shared-utils`，而 `@vue/cli-shared-utils` 依赖了 `node-ipc`，`@vue/cli-shared-utils` 的 package.json 内容如下：
+
+```json
+{
+  "dependencies": {
+    // ...
+    "node-ipc": "^9.1.1",
+  },
+}
+```
+
+这种情况下，即使 `@vue/cli-shared-utils` 自己的 lock file 锁定的版本是 `9.1.1`，但是你首次 `npm i` 安装该包的时候，并不会按照 `@vue/cli-shared-utils` 的 lock file 锁定的版本安装，而是根据 package.json 中指定的 `^9.1.1` 规则进行安装。如果此时 `node-ipc` 发布了 `9.2.1` 版本，则会安装 `9.2.1` 版本，同时在你的前端项目的 lock file 中会记录该版本号，下次运行 `npm i` 安装依赖的时候，都会安装该版本的依赖。
+
+这样显然会导致间接依赖不受控的问题，实际上，`node-ipc` 的作者在 `9.2.2` 版本中植入了恶意代码，恰好 `@vue/cli-shared-utils` 中 package.json 的依赖锁定规则是 `^9.1.1`，因此导致很多安装了 `vue-cli` 的用户中招。因此 Vue 官方紧急发布了更新，将 `node-ipc` 版本锁死为 `9.2.1`：
+
+```json
+{
+  "dependencies": {
+    // ...
+    "node-ipc": "9.2.1",
+  },
+}
+```
+
+为避免前端项目中出现间接依赖不受控的问题，建议在第三方库的 package.json 中锁定 dependencies 版本。
+
+#### 第三方库的 lock file 的作用
+
+前面提到，安装第三方库的时候，实际上并不会根据第三方库的 lock file 锁定的版本进行安装，那第三方库的 lock file 作用是什么，第三方库是否应该提交 lock file？实际上，第三方库 lock file 的作用仅仅只是锁定 devDependencies，这样 Contributor 可根据 lock file 很容易将项目跑起来。
+
+### 7) 包管理工具
 
 使用 pnpm 作为包管理工具。
 
