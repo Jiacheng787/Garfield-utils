@@ -239,6 +239,14 @@ $ npm config set save-exact true
 
 使用 pnpm 作为包管理工具。
 
+:::tip
+
+推荐阅读：为什么 npm@v3 改为平铺结构还是会重复装包
+
+[工程化知识卡片 023：node_modules 版本重复的困境](https://juejin.cn/post/7030084290989948935)
+
+:::
+
 基本用法：
 
 - `pnpm add <pkg>`：安装依赖
