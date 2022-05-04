@@ -243,6 +243,10 @@ $ npm config set save-exact true
 
 推荐阅读：为什么 npm@v3 改为平铺结构还是会重复装包
 
+[深入浅出 tnpm rapid 模式 - 如何比 pnpm 快 10 秒](https://zhuanlan.zhihu.com/p/455809528)
+
+[【第2506期】JavaScript 包管理器简史（npm/yarn/pnpm）](https://mp.weixin.qq.com/s/0Nx093GdMcYo5Mr5VRFDjw)
+
 [工程化知识卡片 023：node_modules 版本重复的困境](https://juejin.cn/post/7030084290989948935)
 
 :::
@@ -263,6 +267,8 @@ $ npm config set save-exact true
 [pnpm 官方文档](https://pnpm.io/zh/)
 
 [为什么 vue 源码以及生态仓库要迁移 pnpm?](https://juejin.cn/post/7038192011882528776)
+
+[pnpm 源码结构及调试指南](https://mp.weixin.qq.com/s/grb2OlBYiwU3TOkEtNZReA)
 
 ## 2. 初始化 TypeScript
 
