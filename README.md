@@ -60,6 +60,29 @@ module.exports = {
 
 > 假如提供了 `module` 字段，Webpack 优先使用 `module` 字段对应的入口文件路径
 
+从 node 14.x 版本开始，package.json 里支持了 `exports` 属性，当它存在时，它的优先级最高。
+
+```json
+{
+  "exports": {
+    "import": "es/index.js",
+    "require": "cjs/index.js"
+  }
+}
+```
+
+:::tip
+
+`exports` 可以更容易地控制子目录的访问路径，不在 `exports` 字段中的模块，即使直接访问路径，也无法引用！
+
+此外，Webpack 打包的项目也支持 `exports` 字段。
+
+[工程化知识卡片 014: 发包篇之 package.json 中 main、export、module 的区别何在](https://juejin.cn/post/7025809061660590087)
+
+http://nodejs.cn/api/packages.html#main-entry-point-export
+
+:::
+
 ### 2) 注册命令
 
 很多 npm 包安装的时候，会注册命令便于使用，例如 Vue-cli、Webpack、ESLint 等等。我们只需要在 `package.json` 中添加一个 `bin` 字段，指定执行命令的脚本文件路径即可：
@@ -72,7 +95,7 @@ module.exports = {
 }
 ```
 
-使用 `npm i` 安装该包，会自动在 `node_modules/.bin` 路径下创建一个软链接，指向脚本文件。运行这个命令即可执行脚本。需要注意，该脚本文件必须是可执行文件，即文件头部需要声明脚本解释程序：
+使用 `npm i` 安装该包，会自动在 `node_modules/.bin` 路径下创建一个软链接，指向脚本文件。运行这个命令即可执行脚本。需要注意，该脚本文件必须是可执行文件，即文件头部需要添加 shebang 用于声明脚本解释程序：
 
 ```js
 #!/usr/bin/env node
@@ -135,6 +158,22 @@ module.exports = {
   "vue": "^3.2.0"
 },
 ```
+
+:::tip
+
+为什么需要 `peerDependencies`
+
+例如开发一个 React 组件库的时候，有三个诉求：
+
+- 该组件库开发的时候需要安装 React；
+- 用户引入该组件库的时候不能重复安装 React；
+- 组件库的 React 版本与目标环境不一致的时候需要被包管理器发现并打印警告；
+
+如果安装到 `dependencies` 下，显然会导致重复安装；如果安装到 `devDependencies` 下虽然不会导致重复安装，但包管理器不会检查版本，当版本不一致的时候不会打印警告。所以 `peerDependencies` 是最优选择。
+
+> 在老版本 React 项目中引入某些依赖库（例如 `antd`、`react-transition-group`），一般不能直接安装最新的版本（大概率会报错），此时应该根据依赖库的 package.json 中指定的 `peerDependencies` 字段选择合适的依赖库版本
+
+:::
 
 ### 5) 版本号
 
@@ -269,6 +308,52 @@ $ npm config set save-exact true
 [为什么 vue 源码以及生态仓库要迁移 pnpm?](https://juejin.cn/post/7038192011882528776)
 
 [pnpm 源码结构及调试指南](https://mp.weixin.qq.com/s/grb2OlBYiwU3TOkEtNZReA)
+
+如何设置 NPM Registry：
+
+1\. Global registry
+
+我们可以通过设置 npm 或者 pnpm 的 config 来设置 Global Registry，例如：
+
+```bash
+# npm
+npm config set registry=https://registry.npmmirror.com/
+
+# or pnpm
+pnpm config set registry=https://registry.npmmirror.com/
+```
+
+2\. npmrc
+
+无论是 `npm` 或 `pnpm` 默认都会从项目的 `.npmrc` 文件中读取配置，所以当我们需要包的发布要走私有 Registry 的时候，可以这样设置：
+
+```bash
+registry=https://registry.npmmirror.com/
+```
+
+3\. --registry
+
+在执行 `npm publish` 或 `pnpm publish` 的时候，我们也可以通过带上 `--registry Option` 来告知对应的包管理工具要发布的 Registry，例如：
+
+```bash
+# npm
+npm publish --registry=https://registry.npmmirror.com/
+
+# or pnpm
+pnpm publish --registry=https://registry.npmmirror.com/
+```
+
+4\. PublishConfig
+
+PublishConfig 指的是我们可以在要执行 publish 命令的项目 `package.json` 中的 `publishConfig.registry` 来告知 npm 或 pnpm 要发布的 Registry，例如：
+
+```json
+{
+  "publishConfig": {
+    "registry": "http://localhost:2000"
+  }
+}
+```
 
 ## 2. 初始化 TypeScript
 
