@@ -350,7 +350,7 @@ PublishConfig 指的是我们可以在要执行 publish 命令的项目 `package
 ```json
 {
   "publishConfig": {
-    "registry": "http://localhost:2000"
+    "registry": "https://registry.npmmirror.com/"
   }
 }
 ```
