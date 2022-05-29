@@ -423,7 +423,7 @@ dist/
 
 ## 4. 初始化 Rollup 打包环境
 
-选用 Rollup 作为 NPM 包的构建工具，较好地支持 Tree-Shaking ，使得打包出来的体积较小。
+Rollup 是专注于第三方库的打包器，打包产物比较干净，不含运行时代码、模板代码等等，而且较好地支持 Tree-Shaking，打包出来的体积较小。
 
 ```bash
 $ yarn add rollup -D
@@ -479,6 +479,25 @@ export default [
 ```
 
 > 在开发时通过 `yarn dev` 可以实时编译打包，在打包时通过 `yarn build` 即可完成打包
+
+使用 rollup 构建第三方库包括哪些过程
+
+- 浏览器不兼容的语法转换
+  - Vue 文件处理：`rollup-plugin-vue`
+  - JSX、TS 语法编译：`rollup-plugin-babel`
+  - 支持 CSS 加载、添加前缀、压缩、scss/less 预编译：`rollup-plugin-postcss`
+- 编译兼容
+  - 仅限语法转换，不建议 polyfill：`rollup-plugin-babel`
+- 混淆压缩
+  - 对应：`rollup-plugin-terser`
+- 打包为一份文件（注意 `peerDependencies` 外部化），多种打包格式，生成类型声明文件等
+- 工程质量保障，例如 ESLint、TS 类型检查、单元测试等
+
+:::tip
+
+注意：前面两步可以避免业务项目的 `babel-loader` 处理 `node_modules` 下的模块，提升构建效率。
+
+:::
 
 开发常用的 rollup 插件：
 
