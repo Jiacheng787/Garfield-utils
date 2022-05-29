@@ -513,7 +513,7 @@ Babel 的作用是根据配置的 `browserslist` ，根据目标浏览器的兼�
 
 无论第三方库还是 npm 包，语法转换基本都需要，区别主要在 polyfill 上。引入 polyfill 主要有两种方式：
 
-- 一是通过 `@babel/preset-env` 引入，根据 `browserslist` 配置决定需要引入哪些 polyfill，根据 `useBuiltIns` 配置决定全量引入还是按需引入，这种引入方式是全局污染的（污染原型链，会跟其他第三方 polyfill 冲突），不适合第三方库，但是可以用于前端项目。
+- 一是通过 `@babel/preset-env` 引入，根据 `browserslist` 配置决定需要引入哪些 polyfill，根据 `useBuiltIns` 配置决定全量引入还是按需引入。这种引入方式是全局污染的（污染原型链，会跟其他第三方 polyfill 冲突），不适合第三方库，但是可以用于前端项目。
 
   ```js
   module.exports = {
@@ -540,7 +540,7 @@ Babel 的作用是根据配置的 `browserslist` ，根据目标浏览器的兼�
   }
   ```
 
-- 二是通过 `@babel/plugin-transform-runtime` 引入，配置 `corejs: 3` 选项，从 `@babel/runtime-corejs3` 引入 polyfill，这种方式不适合前端项目，因为无法根据 `browserslist` 配置动态调整 polyfill 内容（这是一个已知问题，会在 Babel8 修复）。但适合第三方库，因为提供了沙箱机制，polyfill 不会全局污染。
+- 二是通过 `@babel/plugin-transform-runtime` 引入，配置 `corejs: 3` 选项，从 `@babel/runtime-corejs3` 引入 polyfill。这种方式不适合前端项目，因为无法根据 `browserslist` 配置动态调整 polyfill 内容（这是一个已知问题，会在 Babel8 修复）。但适合第三方库，因为提供了沙箱机制，polyfill 不会全局污染。
 
   ```js
   module.exports = {
