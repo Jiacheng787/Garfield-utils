@@ -552,7 +552,7 @@ export default [
 
 Babel 的作用是根据配置的 `browserslist` ，根据目标浏览器的兼容性，对代码中用到的 ES2015+ 语法进行转换，以及 API 的 polyfill。
 
-无论第三方库还是 npm 包，语法转换基本都需要，区别主要在 polyfill 上。引入 polyfill 主要有两种方式：
+无论前端业务工程还是 npm 包，语法转换基本都需要，区别主要在 polyfill 上。引入 polyfill 主要有两种方式：
 
 - 一是通过 `@babel/preset-env` 引入，根据 `browserslist` 配置决定需要引入哪些 polyfill，根据 `useBuiltIns` 配置决定全量引入还是按需引入。这种引入方式是全局污染的（污染原型链，会跟其他第三方 polyfill 冲突），不适合第三方库，但是可以用于前端项目。
 
@@ -639,6 +639,8 @@ module.exports = {
   ]
 }
 ```
+
+> 第三方库确实可以不进行 polyfill，但是语法转换是必不可少的，例如 JSX、TS 语法转换、ES2015+ 语法编译兼容等，这样可以避免业务工程的 `babel-loader` 处理 `node_modules` 下的模块，最小化 loader 作用范围，提升业务工程构建效率
 
 参考：
 
