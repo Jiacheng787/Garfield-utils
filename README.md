@@ -73,7 +73,7 @@ module.exports = {
 
 :::tip
 
-`exports` 可以更容易地控制子目录的访问路径，不在 `exports` 字段中的模块，即使直接访问路径，也无法引用！
+`exports` 可以更容易地控制子目录的访问路径，不在 `exports` 字段中的模块，即使直接访问路径，也无法引用！不过在很多开源项目中，会同时定义 `exports`、`main`、`module` 字段，很明显这是为了兼容处理，低版本 Node 会忽略 `exports` 字段。
 
 此外，Webpack 打包的项目也支持 `exports` 字段。
 
