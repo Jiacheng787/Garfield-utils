@@ -147,7 +147,7 @@ http://nodejs.cn/api/packages.html#main-entry-point-export
 - `devDependencies`：表示开发环境下的依赖管理，例如 Webpack、ESLint 等项目构建所需的依赖，`--save-dev` 简写 `-D`；
 
 > 实际上这两个字段对于前端项目来说并没有太大区别，但是在以下场景中会有区别：
-> 
+>
 > - 前端项目安装一个第三方库，默认只安装该库 `dependencies` 节点下的依赖
 > - 在 CI 环境中，运行 `npm install --production` 只安装 `dependencies` 节点下的依赖
 
@@ -976,6 +976,15 @@ $ npm login
   "version": "1.0.0",
   "main": "index.js"
 }
+```
+
+npm 发包之前应该 `npm publish --dry-run` 列出所有要发布的文件，确保在发包之前进行检查，防止包含敏感信息的文件被发布出去：
+
+```bash
+$ npm publish --dry-run
+
+# 如果用 PNPM 可以执行下面命令
+$ pnpm publish --dry-run
 ```
 
 之后执行发包命令即可：
